@@ -1,25 +1,28 @@
 package ua.hillelit.lms.maps.model;
 
-public class FileData {
-  private String name;
-  private int fileSize;
-  private String pathToFile;
+import java.util.Random;
 
-  public FileData(String name, int fileSize, String pathToFile) {
-    this.name = name;
-    this.fileSize = fileSize;
-    this.pathToFile = pathToFile;
+public class FileData {
+private final String fileName;
+private final int fileSize;
+private final String path;
+
+  public FileData(String fileName, String path) {
+    Random random = new Random();
+    this.fileName = fileName;
+    this.fileSize =random.nextInt(50);
+    this.path = path;
   }
 
-  public String getName() {
-    return name;
+  public String getFileName() {
+    return fileName;
   }
 
   public int getFileSize() {
     return fileSize;
   }
 
-  public String getPathToFile() {
-    return pathToFile;
+  public String getPath() {
+    return path;
   }
 }

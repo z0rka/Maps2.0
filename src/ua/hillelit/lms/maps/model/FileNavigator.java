@@ -1,83 +1,67 @@
 package ua.hillelit.lms.maps.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Map.Entry;
 import java.util.Set;
 
 public class FileNavigator {
+  private final Map<String,FilesList> navigator = new HashMap<>();
 
-private Map<String,FileData> files = new HashMap();
-
-  public FileNavigator() {}
-
-  public void add(FileData file){
-    files.put(file.getPathToFile() , file);
-  }
-
-  public List find(String path){
-    List<FileData> filesWithExactPath = new ArrayList<>();
-    Set<String> keys = files.keySet();
-
-    for (String key : keys) {
-      if(key == path){
-        filesWithExactPath.add(files.get(key));
+  private List<FileData> filterBySize(List<FileData> filesList,int size){
+    for (FileData fileData : filesList) {
+      if(fileData.getFileSize() > size){
+        filesList.remove(fileData);
       }
     }
-
-    return filesWithExactPath;
+    return filesList;
   }
 
-  public List filterBySize(int fileSize){
-    Collection<FileData> values = files.values();
-    List<FileData> filesByBytes = new ArrayList<>();
-
-    for (FileData value : values) {
-      if(value.getFileSize() < fileSize){
-        filesByBytes.add(value);
-      }
-    }
-
-    return filesByBytes;
+  private List<FileData> sortBySize(List<FileData> files){
+    files.sort(Comparator.comparing(FileData::getFileSize));
+    return files;
+  }
+  public FileNavigator() {
   }
 
-  public void remove(String path){
-    files.remove(path);
-  }
 
-  public List sortBySize(){
-    Collection<FileData> values = files.values();
-    List<FileData> sortedFiles= new LinkedList<>();
-
-    for (FileData value : values) {
-      sortedFiles.add(value);
-    }
-
-   sortedFiles.sort(Comparator.comparing(FileData::getFileSize));
-
-    return sortedFiles;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean add(FileData file){
+    if(navigator.containsKey(file.getPath())){
+      navigator.get(file.getPath()).add(file);
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    FileNavigator that = (FileNavigator) o;
-    return Objects.equals(files, that.files);
+    navigator.put(file.getPath(),new FilesList(file));
+    return true;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(files);
+  public List<FileData> find(String path){
+    return navigator.get(path).getFiles();
+  }
+
+  public List<FileData> filterBySize(int size){
+    Set<Entry<String, FilesList>> entrySet = navigator.entrySet();
+    List<FileData> filesList = new LinkedList<>();
+    for (Entry<String, FilesList> stringFilesListEntry : entrySet) {
+      filesList.addAll(filterBySize(stringFilesListEntry.getValue().getFiles(),size));
+    }
+    return filesList;
+  }
+
+  public List<FileData> sortBySize(){
+    Collection<FilesList> values = navigator.values();
+    List<FileData> filesList = new LinkedList<>();
+
+    for (FilesList value : values) {
+      filesList.addAll(sortBySize(value.getFiles()));
+    }
+    return filesList;
+  }
+  public FilesList remove(String path){
+    return navigator.remove(path);
   }
 }
